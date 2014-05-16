@@ -16,6 +16,27 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
   }
   
   /**
+   * @wp.filter       promotions/features
+   */
+  public function add_feature( $features )
+  {
+    $features['share_entry'] = 'Share Entries';
+    return $features;
+  }
+  
+  /**
+   * @wp.filter     promotions/tabs/promotion/display
+   * @wp.priority   10
+   */
+  public function display_tabs( $tabs, $post )
+  {
+    if( Snap::inst('Promotions_Functions')->is_enabled('share_entry', $post->ID) )
+      return $tabs;
+    unset( $tabs[$this->tab_key] );
+    return $tabs;
+  }
+  
+  /**
    * @wp.action     promotions/init
    */
   public function promotions_init()
@@ -41,6 +62,9 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
    */
   public function add_hidden_field( $content )
   {
+    if( !Snap::inst('Promotions_Functions')->is_enabled('share_entry', $post->ID) ){
+      return $content;
+    }
     $registration_id = get_query_var('share');
     if( !$registration_id ) return $content;
     $content .= Snap_Util_Html::tag('input', array(
@@ -56,6 +80,9 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
    */
   public function on_register( $result, $params )
   {
+    if( !Snap::inst('Promotions_Functions')->is_enabled('share_entry', $post->ID) ){
+      return $result;
+    }
     if( is_array($result) && isset($result['success']) && $result['success'] ){
       if( isset( $params['_share'] ) ){
         $id = $params['_share'];
@@ -98,7 +125,9 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
    */
   public function on_enter( $result )
   {
-    
+    if( !Snap::inst('Promotions_Functions')->is_enabled('share_entry', $post->ID) ){
+      return $result;
+    }
     return $this->_add_share_url( $result );
   }
   
