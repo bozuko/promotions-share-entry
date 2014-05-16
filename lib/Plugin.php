@@ -13,17 +13,9 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
   public function init()
   {
     add_rewrite_endpoint('share', EP_PERMALINK | EP_ROOT );
-  }
-  
-  /**
-   * @wp.action     promotions/init
-   */
-  public function promotions_init()
-  {
     $this->register_field_groups(
       'share-entry'
     );
-    // $this->register_data_dir(THEME_DIR.'/data');
   }
   
   /**
