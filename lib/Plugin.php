@@ -19,6 +19,16 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
   }
   
   /**
+   * @wp.action   promotions/analytics/register
+   */
+  public function register_analytics_metric( $analytics )
+  {
+    $analytics->register('share_entries', array(
+      'label'     => 'Share Entries'
+    ));
+  }
+  
+  /**
    * @wp.filter       promotions/tabs/promotion/register
    * @wp.priority     40
    */
@@ -78,6 +88,10 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
             ));
             update_post_meta( $entry_id, 'shared_to', $result['registration_id'] );
             update_post_meta( $entry_id, 'source', @$params['_share_source'] );
+            
+            Snap::inst('Promotions_Analytics')
+              ->increment('share_entries');
+            
           }
         }
       }
