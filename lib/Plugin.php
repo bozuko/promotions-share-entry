@@ -71,7 +71,7 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
    */
   public function add_hidden_field( $content )
   {
-    if( !Snap::inst('Promotions_Functions')->is_enabled('share_entry', $post->ID) ){
+    if( !Snap::inst('Promotions_Functions')->is_enabled('share_entry') ){
       return $content;
     }
     $registration_id = get_query_var('share');
