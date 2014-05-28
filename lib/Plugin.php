@@ -36,6 +36,12 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
     $analytics->register('share_entries', array(
       'label'     => 'Share Entries'
     ));
+    $analytics->register('share_entries_facebook', array(
+      'label'     => 'Facebook Share Entries'
+    ));
+    $analytics->register('share_entries_twitter', array(
+      'label'     => 'Twitter Share Entries'
+    ));
   }
   
   /**
@@ -75,6 +81,15 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
       'name'        => '_share',
       'value'       => $registration_id
     ));
+    
+    if( @$_REQUEST['_share_source'] ) {
+      $content .= Snap_Util_Html::tag('input', array(
+        'type'        => 'hidden',
+        'name'        => '_share_source',
+        'value'       => $_REQUEST['_share_source']
+      ));
+    }
+    
     return $content;
   }
   
@@ -105,7 +120,10 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
           ";
           
           $stmt = $wpdb->prepare( $sql, $registration->ID );
+          
+          
           if( $wpdb->get_var($stmt) < $limit ){
+            
             // we can add a new one.
             $entry_id = wp_insert_post(array(
               'post_type'     => 'entry',
@@ -114,17 +132,37 @@ class PromotionsShareEntry_Plugin extends Promotions_Plugin_Base
               'post_status'   => 'publish',
               'post_name'     => 'share-from-'.$registration->ID
             ));
+            
             update_post_meta( $entry_id, 'shared_to', $result['registration_id'] );
             update_post_meta( $entry_id, 'source', @$params['_share_source'] );
+            update_post_meta( $entry_id, 'entry_type', 'share');
             
             Snap::inst('Promotions_Analytics')
               ->increment('share_entries');
             
+            if( @$params['_share_source'] == 'facebook' )
+              Snap::inst('Promotions_Analytics')
+              ->increment('share_entries_facebook');
+              
+            if( @$params['_share_source'] == 'twitter' )
+              Snap::inst('Promotions_Analytics')
+              ->increment('share_entries_twitter');
+            
           }
+          
         }
       }
     }
     return $this->_add_share_url( $result );
+  }
+  
+  /**
+   * @wp.filter         promotions/dashboard/charts/entries/metrics
+   */
+  public function add_entry_chart_metric( $metrics )
+  {
+    $metrics[] = 'share_entries';
+    return $metrics;
   }
   
   /**
